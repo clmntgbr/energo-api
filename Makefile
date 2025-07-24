@@ -109,3 +109,6 @@ consume:
 
 ngrok: 
 	ngrok http --url=choice-pretty-leech.ngrok-free.app --host-header=localhost https://localhost:443
+
+update-energy:
+	$(PHP) php bin/console app:update:energy
