@@ -12,29 +12,29 @@ abstract class Price
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::FLOAT)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     protected float $value;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     protected string $currency;
 
     #[ORM\ManyToOne(targetEntity: Type::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     protected Type $type;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     protected \DateTime $date;
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;

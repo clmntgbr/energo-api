@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -24,9 +26,15 @@ use Symfony\Component\Uid\Uuid;
             normalizationContext: ['skip_null_values' => false, 'groups' => ['station:read']],
         ),
         new GetCollection(
-            normalizationContext: ['skip_null_values' => false, 'groups' => ['station:read']],
+            normalizationContext: ['skip_null_values' => false, 'groups' => ['station:read:full']],
         ),
     ],
+)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        'status' => 'exact',
+    ]
 )]
 class Station
 {
@@ -34,38 +42,42 @@ class Station
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $stationId;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $name;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     private string $pop;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $status;
 
     #[ORM\Column(type: Types::JSON)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
+    private array $statuses = [];
+
+    #[ORM\Column(type: Types::JSON)]
+    #[Groups(['station:read:full'])]
     private array $services;
 
     #[ORM\OneToOne(targetEntity: Address::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private Address $address;
 
     #[ORM\OneToOne(targetEntity: GooglePlace::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     private ?GooglePlace $googlePlace = null;
 
     #[ORM\OneToMany(targetEntity: CurrentPrice::class, mappedBy: 'station')]
     #[ORM\OrderBy(['date' => 'DESC'])]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private Collection $currentPrices;
 
     #[ORM\OneToMany(targetEntity: PriceHistory::class, mappedBy: 'station')]
@@ -79,23 +91,24 @@ class Station
     {
         $this->id = Uuid::v4();
         $this->status = StationStatus::IMPORTED->getValue();
+        $this->statuses = [StationStatus::IMPORTED->getValue()];
         $this->currentPrices = new ArrayCollection();
         $this->priceHistories = new ArrayCollection();
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getId(): Uuid
     {
         return $this->id;
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;
@@ -104,6 +117,7 @@ class Station
     public function markAsPlaceSearchNearbyFailed(): static
     {
         $this->setStatus(StationStatus::PLACE_SEARCH_NEARBY_FAILED);
+        $this->statuses[] = StationStatus::PLACE_SEARCH_NEARBY_FAILED->getValue();
 
         return $this;
     }
@@ -111,6 +125,7 @@ class Station
     public function markAsPlaceSearchNearbySuccess(): static
     {
         $this->setStatus(StationStatus::PLACE_SEARCH_NEARBY_SUCCESS);
+        $this->statuses[] = StationStatus::PLACE_SEARCH_NEARBY_SUCCESS->getValue();
 
         return $this;
     }
@@ -118,6 +133,7 @@ class Station
     public function markAsPlaceDetailsFailed(): static
     {
         $this->setStatus(StationStatus::PLACE_DETAILS_FAILED);
+        $this->statuses[] = StationStatus::PLACE_DETAILS_FAILED->getValue();
 
         return $this;
     }
@@ -125,6 +141,15 @@ class Station
     public function markAsPlaceDetailsSuccess(): static
     {
         $this->setStatus(StationStatus::PLACE_DETAILS_SUCCESS);
+        $this->statuses[] = StationStatus::PLACE_DETAILS_SUCCESS->getValue();
+
+        return $this;
+    }
+
+    public function markAsValidationPending(): static
+    {
+        $this->setStatus(StationStatus::VALIDATION_PENDING);
+        $this->statuses[] = StationStatus::VALIDATION_PENDING->getValue();
 
         return $this;
     }
@@ -314,6 +339,18 @@ class Station
     public function setOpenData(array $openData): static
     {
         $this->openData = $openData;
+
+        return $this;
+    }
+
+    public function getStatuses(): array
+    {
+        return $this->statuses;
+    }
+
+    public function setStatuses(array $statuses): static
+    {
+        $this->statuses = $statuses;
 
         return $this;
     }

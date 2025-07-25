@@ -24,7 +24,7 @@ class PriceHistory extends Price
         $this->id = Uuid::v4();
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full'])]
     public function getId(): Uuid
     {
         return $this->id;

@@ -2,8 +2,6 @@
 
 namespace App\Dto;
 
-use App\Dto\OpenDataPrice;
-
 class OpenDataStation implements \JsonSerializable
 {
     public function __construct(

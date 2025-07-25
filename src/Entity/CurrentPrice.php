@@ -24,7 +24,7 @@ class CurrentPrice extends Price
         $this->id = Uuid::v4();
     }
 
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     public function getId(): Uuid
     {
         return $this->id;

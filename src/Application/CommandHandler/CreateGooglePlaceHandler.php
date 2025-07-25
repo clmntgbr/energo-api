@@ -3,6 +3,7 @@
 namespace App\Application\CommandHandler;
 
 use App\Application\Command\CreateGooglePlace;
+use App\Entity\Address;
 use App\Entity\GooglePlace;
 use App\Entity\Station;
 use App\Repository\StationRepository;
@@ -31,10 +32,20 @@ class CreateGooglePlaceHandler
 
         $googlePlace = new GooglePlace();
         $googlePlace->setPlaceId($message->placeDetails->id);
+        $googlePlace->setInternationalPhoneNumber($message->placeDetails->internationalPhoneNumber);
+        $googlePlace->setRating($message->placeDetails->rating);
+        $googlePlace->setUserRatingCount($message->placeDetails->userRatingCount);
+        $googlePlace->setBusinessStatus($message->placeDetails->businessStatus);
+        $googlePlace->setWebsiteUri($message->placeDetails->websiteUri);
+        $googlePlace->setGoogleMapsDirectionsUri($message->placeDetails->googleMapsDirectionsUri);
+        $googlePlace->setGoogleMapsPlaceUri($message->placeDetails->googleMapsPlaceUri);
+        $googlePlace->setPlaceDetails($message->placeDetails->jsonSerialize());
 
         $station->setName($message->placeDetails->displayName);
         $station->setGooglePlace($googlePlace);
+        $station->setAddress(Address::fromPlaceDetails($message->placeDetails));
         $station->markAsPlaceDetailsSuccess();
+        $station->markAsValidationPending();
 
         $this->stationRepository->save($station);
     }

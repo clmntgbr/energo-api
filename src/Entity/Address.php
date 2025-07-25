@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Dto\OpenDataStation;
+use App\Dto\PlaceDetails;
 use App\Entity\Trait\UuidTrait;
 use App\Repository\AddressRepository;
 use Doctrine\DBAL\Types\Types;
@@ -20,27 +21,27 @@ class Address
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $street;
 
     #[ORM\Column(type: Types::STRING, length: 100)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $city;
 
     #[ORM\Column(type: Types::STRING, length: 10)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $postalCode;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private string $country;
 
     #[ORM\Column(type: Types::FLOAT)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private float $latitude;
 
     #[ORM\Column(type: Types::FLOAT)]
-    #[Groups(['station:read'])]
+    #[Groups(['station:read:full', 'station:read'])]
     private float $longitude;
 
     public function __construct()
@@ -59,6 +60,31 @@ class Address
         $address->setCountry('FR');
 
         return $address;
+    }
+
+    public static function fromPlaceDetails(PlaceDetails $placeDetails): self
+    {
+        $components = array_reduce($placeDetails->addressComponents, function (array $acc, array $component) {
+            $types = $component['types'] ?? [];
+            $longText = $component['longText'] ?? '';
+
+            return match (true) {
+                in_array('street_number', $types) => [...$acc, 'streetNumber' => $longText],
+                in_array('route', $types) => [...$acc, 'route' => $longText],
+                in_array('locality', $types) => [...$acc, 'city' => $longText],
+                in_array('postal_code', $types) => [...$acc, 'postalCode' => $longText],
+                in_array('country', $types) => [...$acc, 'country' => $longText],
+                default => $acc,
+            };
+        }, []);
+
+        return (new self())
+            ->setStreet(trim(($components['streetNumber'] ?? '').' '.($components['route'] ?? '')))
+            ->setCity($components['city'] ?? '')
+            ->setPostalCode($components['postalCode'] ?? '')
+            ->setCountry($components['country'] ?? '')
+            ->setLatitude($placeDetails->latitude)
+            ->setLongitude($placeDetails->longitude);
     }
 
     public function getStreet(): ?string

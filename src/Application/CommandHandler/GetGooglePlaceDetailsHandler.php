@@ -39,8 +39,6 @@ class GetGooglePlaceDetailsHandler
             return;
         }
 
-        dd($placeDetails);
-
         $this->bus->dispatch(
             messages: [
                 new CreateGooglePlace(
