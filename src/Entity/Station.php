@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use App\Dto\OpenDataStation;
 use App\Entity\Trait\UuidTrait;
+use App\Enum\StationStatus;
 use App\Repository\StationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -44,6 +45,10 @@ class Station
     #[Groups(['station:read'])]
     private string $pop;
 
+    #[ORM\Column(type: Types::STRING)]
+    #[Groups(['station:read'])]
+    private string $status;
+
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['station:read'])]
     private array $services;
@@ -65,6 +70,7 @@ class Station
     public function __construct()
     {
         $this->id = Uuid::v4();
+        $this->status = StationStatus::IMPORTED->getValue();
         $this->currentPrices = new ArrayCollection();
         $this->priceHistories = new ArrayCollection();
     }
@@ -229,6 +235,18 @@ class Station
     public function setServices(array $services): static
     {
         $this->services = $services;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }
