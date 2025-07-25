@@ -23,10 +23,10 @@ use Symfony\Component\Uid\Uuid;
 #[ApiResource(
     operations: [
         new Get(
-            normalizationContext: ['skip_null_values' => false, 'groups' => ['station:read']],
+            normalizationContext: ['skip_null_values' => false],
         ),
         new GetCollection(
-            normalizationContext: ['skip_null_values' => false, 'groups' => ['station:read:full']],
+            normalizationContext: ['skip_null_values' => false],
         ),
     ],
 )]
@@ -60,6 +60,10 @@ class Station
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['station:read:full'])]
     private array $statuses = [];
+
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    #[Groups(['station:read:full'])]
+    private ?float $trust = null;
 
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['station:read:full'])]
@@ -96,19 +100,19 @@ class Station
         $this->priceHistories = new ArrayCollection();
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'station:read'])]
     public function getId(): Uuid
     {
         return $this->id;
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'station:read'])]
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'station:read'])]
     public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;
@@ -351,6 +355,18 @@ class Station
     public function setStatuses(array $statuses): static
     {
         $this->statuses = $statuses;
+
+        return $this;
+    }
+
+    public function getTrust(): ?float
+    {
+        return $this->trust;
+    }
+
+    public function setTrust(?float $trust): static
+    {
+        $this->trust = $trust;
 
         return $this;
     }
