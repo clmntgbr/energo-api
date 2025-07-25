@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\CurrentPrice;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 class CurrentPriceRepository extends AbstractRepository

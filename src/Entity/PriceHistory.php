@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use App\Dto\OpenDataPrice;
 use App\Entity\Trait\UuidTrait;
+use App\Enum\Currency;
 use App\Repository\PriceHistoryRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: PriceHistoryRepository::class)]
 class PriceHistory extends Price
@@ -15,6 +18,30 @@ class PriceHistory extends Price
     #[ORM\ManyToOne(targetEntity: Station::class, inversedBy: 'priceHistories')]
     #[ORM\JoinColumn(nullable: false)]
     protected Station $station;
+
+    public function __construct()
+    {
+        $this->id = Uuid::v4();
+    }
+
+    #[Groups(['station:read'])]
+    public function getId(): Uuid
+    {
+        return $this->id;
+    }
+
+    public static function createGasPrice(Station $station, OpenDataPrice $openDataPrice, Type $type): self
+    {
+        $price = new self();
+
+        $price->setStation($station);
+        $price->setCurrency(Currency::EUR->getValue());
+        $price->setPrice($openDataPrice->value);
+        $price->setDate($openDataPrice->updatedAt);
+        $price->setType($type);
+
+        return $price;
+    }
 
     public function getStation(): ?Station
     {

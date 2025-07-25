@@ -2,57 +2,50 @@
 
 namespace App\Service;
 
-use App\Repository\StationRepository;
-use App\Entity\Station;
-
 class OpenDataService
 {
     private const URL = 'https://donnees.roulez-eco.fr/opendata/instantane';
     private const DIRECTORY = __DIR__.'/../../public/data';
-    
+
     public function __construct()
     {
     }
 
-    public function get(string $fileName)
+    public function get(string $zipFilePath)
     {
-        $zipFilePath = self::DIRECTORY . '/' . $fileName;
-
         $fileData = file_get_contents(self::URL);
-        if ($fileData === false) {
+        if (false === $fileData) {
             throw new \RuntimeException('Failed to download the zip file.');
         }
 
         $result = file_put_contents($zipFilePath, $fileData);
-        if ($result === false) {
+        if (false === $result) {
             throw new \RuntimeException('Failed to save the zip file.');
         }
 
         return $zipFilePath;
     }
 
-    public function unzip(string $fileName, string $newFileName)
+    public function unzip(string $zipFilePath, string $newFilePath)
     {
-        $zipFilePath = self::DIRECTORY . '/' . $fileName;
         $zip = new \ZipArchive();
-        if ($zip->open($zipFilePath) === TRUE) {
+        if (true === $zip->open($zipFilePath)) {
             $zip->extractTo(self::DIRECTORY);
             $firstFileName = $zip->getNameIndex(0);
             $zip->close();
 
-            $extractedPath = self::DIRECTORY . '/' . $firstFileName;
-            $renamedPath = self::DIRECTORY . '/' . $newFileName;
+            $extractedPath = self::DIRECTORY.'/'.$firstFileName;
+
             if (file_exists($extractedPath)) {
-                rename($extractedPath, $renamedPath);
+                rename($extractedPath, $newFilePath);
             }
         } else {
             throw new \RuntimeException('Failed to open the zip file.');
         }
     }
 
-    public function remove(string $fileName)
+    public function remove(string $filePath)
     {
-        $filePath = self::DIRECTORY . '/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
         }

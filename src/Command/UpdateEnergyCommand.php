@@ -2,14 +2,15 @@
 
 namespace App\Command;
 
+use App\Application\Command\CreateOrUpdateGasStation;
 use App\Service\OpenDataService;
+use App\Service\XmlToDtoTransformer;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsCommand(
     name: 'app:update:energy',
@@ -17,24 +18,36 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class UpdateEnergyCommand extends Command
 {
-    private const FILE_NAME = 'opendata.zip';
-    private const NEW_FILE_NAME = 'opendata.xml';
+    private const DIRECTORY = __DIR__.'/../../public/data';
+    private const ZIP_NAME = self::DIRECTORY.'/opendata.zip';
+    private const XML_NAME = self::DIRECTORY.'/opendata.xml';
 
     public function __construct(
         private readonly OpenDataService $openDataService,
+        private readonly XmlToDtoTransformer $xmlToDtoTransformer,
+        private readonly MessageBusInterface $bus,
     ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $this->openDataService->get(self::ZIP_NAME);
+        $this->openDataService->unzip(self::ZIP_NAME, self::XML_NAME);
+        $this->openDataService->remove(self::ZIP_NAME);
 
-        $this->openDataService->get(self::FILE_NAME);
-        $this->openDataService->unzip(self::FILE_NAME, self::NEW_FILE_NAME);
-        $this->openDataService->remove(self::FILE_NAME);
+        $stations = $this->xmlToDtoTransformer->transformXmlFile(self::XML_NAME);
 
-        $io->success('Energy prices updated');
+        $max = 100;
+        foreach ($stations as $station) {
+            $this->bus->dispatch(new CreateOrUpdateGasStation($station), [new AmqpStamp('async-high')]);
+            --$max;
+            if (0 === $max) {
+                break;
+            }
+        }
+
+        $this->openDataService->remove(self::XML_NAME);
 
         return Command::SUCCESS;
     }

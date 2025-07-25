@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Address;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 class AddressRepository extends AbstractRepository

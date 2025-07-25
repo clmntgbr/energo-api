@@ -3,11 +3,14 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Dto\OpenDataStation;
 use App\Entity\Trait\UuidTrait;
 use App\Repository\AddressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 #[ApiResource]
@@ -17,22 +20,46 @@ class Address
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups(['station:read'])]
     private string $street;
 
     #[ORM\Column(type: Types::STRING, length: 100)]
+    #[Groups(['station:read'])]
     private string $city;
 
     #[ORM\Column(type: Types::STRING, length: 10)]
+    #[Groups(['station:read'])]
     private string $postalCode;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups(['station:read'])]
     private string $country;
 
     #[ORM\Column(type: Types::FLOAT)]
+    #[Groups(['station:read'])]
     private float $latitude;
 
     #[ORM\Column(type: Types::FLOAT)]
+    #[Groups(['station:read'])]
     private float $longitude;
+
+    public function __construct()
+    {
+        $this->id = Uuid::v4();
+    }
+
+    public static function fromDto(OpenDataStation $OpenDataStation): self
+    {
+        $address = new self();
+        $address->setStreet($OpenDataStation->address);
+        $address->setCity($OpenDataStation->city);
+        $address->setPostalCode($OpenDataStation->postalCode);
+        $address->setLatitude($OpenDataStation->latitude);
+        $address->setLongitude($OpenDataStation->longitude);
+        $address->setCountry('FR');
+
+        return $address;
+    }
 
     public function getStreet(): ?string
     {

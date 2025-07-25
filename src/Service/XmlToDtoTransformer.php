@@ -2,378 +2,143 @@
 
 namespace App\Service;
 
-use App\DTO\StationServiceDTO;
-use App\DTO\CarburantDTO;
-use DOMDocument;
-use DOMXPath;
-use Exception;
+use App\Dto\OpenDataPrice;
+use App\Dto\OpenDataStation;
+use App\Dto\Price;
+use App\Dto\Station;
 
-/**
- * Exception pour les erreurs de transformation XML
- */
-class XmlTransformException extends Exception {}
+class XmlTransformException extends \Exception
+{
+}
 
-/**
- * Service pour transformer les données XML en DTO
- */
 class XmlToDtoTransformer
 {
     /**
-     * Transforme un fichier XML en tableau de DTOs
-     * 
-     * @param string $xmlFilePath Chemin vers le fichier XML
-     * @return array<StationServiceDTO>
-     * @throws XmlTransformException
+     * Transform an XML file into an array of Station DTOs.
      */
     public function transformXmlFile(string $xmlFilePath): array
     {
         if (!file_exists($xmlFilePath)) {
-            throw new XmlTransformException("Le fichier XML n'existe pas : $xmlFilePath");
+            throw new XmlTransformException("XML file does not exist: $xmlFilePath");
         }
-
         $xmlContent = file_get_contents($xmlFilePath);
-        if ($xmlContent === false) {
-            throw new XmlTransformException("Impossible de lire le fichier XML : $xmlFilePath");
+        if (false === $xmlContent) {
+            throw new XmlTransformException("Unable to read XML file: $xmlFilePath");
         }
 
         return $this->transformXmlString($xmlContent);
     }
 
     /**
-     * Transforme une chaîne XML en tableau de DTOs
-     * 
-     * @param string $xmlContent Contenu XML
-     * @return array<StationServiceDTO>
-     * @throws XmlTransformException
+     * Transform an XML string into an array of Station DTOs.
      */
-    public function transformXmlString(string $xmlContent): array
+    private function transformXmlString(string $xmlContent): array
     {
-        try {
-            // Désactiver les erreurs libxml pour éviter les warnings
-            $useInternalErrors = libxml_use_internal_errors(true);
-            
-            $dom = new DOMDocument();
-            $dom->preserveWhiteSpace = false;
-            $dom->formatOutput = true;
-            
-            if (!$dom->loadXML($xmlContent)) {
-                $errors = libxml_get_errors();
-                $errorMessages = array_map(fn($error) => trim($error->message), $errors);
-                throw new XmlTransformException("Erreur lors du parsing XML : " . implode(', ', $errorMessages));
-            }
-
-            // Restaurer la gestion d'erreurs
-            libxml_use_internal_errors($useInternalErrors);
-
-            $xpath = new DOMXPath($dom);
-            
-            // Détecter automatiquement la structure XML
-            return $this->detectAndTransform($xpath);
-            
-        } catch (Exception $e) {
-            throw new XmlTransformException("Erreur lors de la transformation : " . $e->getMessage(), 0, $e);
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        if (!@$dom->loadXML($xmlContent)) {
+            throw new XmlTransformException('Error while parsing XML');
         }
+        $xpath = new \DOMXPath($dom);
+        $stations = [];
+        foreach ($xpath->query('//pdv') as $pdvNode) {
+            $stations[] = $this->parseStation($pdvNode);
+        }
+
+        return $stations;
     }
 
     /**
-     * Détecte automatiquement la structure XML et transforme
-     * 
-     * @param DOMXPath $xpath
-     * @return array<StationServiceDTO>
+     * Parse a <pdv> node into a Station DTO.
      */
-    private function detectAndTransform(DOMXPath $xpath): array
+    private function parseStation(\DOMElement $pdvNode): OpenDataStation
     {
-        // Patterns courants pour les données de stations-service
-        $patterns = [
-            '//station',
-            '//pdv',
-            '//point_de_vente',
-            '//station_service',
-            '//item',
-            '//record',
-            '//entry'
-        ];
-
-        foreach ($patterns as $pattern) {
-            $nodes = $xpath->query($pattern);
-            if ($nodes && $nodes->length > 0) {
-                return $this->transformNodes($nodes, $xpath);
-            }
-        }
-
-        // Si aucun pattern n'est trouvé, essayer avec l'élément racine
-        $rootNodes = $xpath->query('/*/*');
-        if ($rootNodes && $rootNodes->length > 0) {
-            return $this->transformNodes($rootNodes, $xpath);
-        }
-
-        throw new XmlTransformException("Impossible de détecter la structure XML");
+        return new OpenDataStation(
+            id: $pdvNode->getAttribute('id'),
+            latitude: (float) $pdvNode->getAttribute('latitude') / 100000,
+            longitude: (float) $pdvNode->getAttribute('longitude') / 100000,
+            postalCode: $pdvNode->getAttribute('cp'),
+            pop: $pdvNode->getAttribute('pop'),
+            address: $this->getSingleNodeValue('adresse', $pdvNode),
+            city: $this->getSingleNodeValue('ville', $pdvNode),
+            services: $this->parseServices($pdvNode),
+            prices: $this->parsePrices($pdvNode),
+            hours: $this->parseHours($pdvNode)
+        );
     }
 
     /**
-     * Transforme une liste de nœuds DOM en DTOs
-     * 
-     * @param \DOMNodeList $nodes
-     * @param DOMXPath $xpath
-     * @return array<StationServiceDTO>
+     * Get the value of a single child node by tag name.
      */
-    private function transformNodes(\DOMNodeList $nodes, DOMXPath $xpath): array
+    private function getSingleNodeValue(string $tag, \DOMElement $context): string
     {
-        $dtos = [];
+        $node = $context->getElementsByTagName($tag)->item(0);
 
-        foreach ($nodes as $node) {
-            $data = $this->extractNodeData($node, $xpath);
-            $dtos[] = StationServiceDTO::fromArray($data);
-        }
-
-        return $dtos;
+        return $node ? $node->nodeValue : '';
     }
 
     /**
-     * Extrait les données d'un nœud XML
-     * 
-     * @param \DOMNode $node
-     * @param DOMXPath $xpath
-     * @return array
+     * Parse all <service> nodes into an array of strings.
      */
-    private function extractNodeData(\DOMNode $node, DOMXPath $xpath): array
-    {
-        $data = [];
-
-        // Mapping des champs courants
-        $fieldMappings = [
-            'id' => ['@id', '@identifiant', 'id', 'identifiant', '@cp'],
-            'nom' => ['nom', 'name', 'enseigne', 'raison_sociale'],
-            'adresse' => ['adresse', 'address', 'rue', 'voie'],
-            'ville' => ['ville', 'city', 'commune'],
-            'code_postal' => ['code_postal', 'cp', 'postal_code', 'zip'],
-            'latitude' => ['latitude', 'lat', '@latitude', '@lat'],
-            'longitude' => ['longitude', 'lng', 'lon', '@longitude', '@lng'],
-            'marque' => ['marque', 'brand', 'enseigne'],
-            'date_maj' => ['maj', 'date_maj', 'updated_at', 'last_update', '@maj'],
-            'automate_24h' => ['automate_24h', 'h24', 'ouvert_24h']
-        ];
-
-        // Extraire les champs simples
-        foreach ($fieldMappings as $dtoField => $xmlFields) {
-            $data[$dtoField] = $this->extractFieldValue($node, $xpath, $xmlFields);
-        }
-
-        // Extraire les services
-        $data['services'] = $this->extractServices($node, $xpath);
-
-        // Extraire les carburants
-        $data['carburants'] = $this->extractCarburants($node, $xpath);
-
-        // Extraire les horaires
-        $data['horaires'] = $this->extractHoraires($node, $xpath);
-
-        return array_filter($data, fn($value) => $value !== null);
-    }
-
-    /**
-     * Extrait la valeur d'un champ depuis plusieurs possibilités
-     * 
-     * @param \DOMNode $node
-     * @param DOMXPath $xpath
-     * @param array $possibleFields
-     * @return mixed
-     */
-    private function extractFieldValue(\DOMNode $node, DOMXPath $xpath, array $possibleFields)
-    {
-        foreach ($possibleFields as $field) {
-            if (str_starts_with($field, '@')) {
-                // Attribut
-                $attrName = substr($field, 1);
-                if ($node->hasAttribute && $node->hasAttribute($attrName)) {
-                    return $node->getAttribute($attrName);
-                }
-            } else {
-                // Élément enfant
-                $childNodes = $xpath->query($field, $node);
-                if ($childNodes && $childNodes->length > 0) {
-                    return trim($childNodes->item(0)->textContent);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Extrait la liste des services
-     * 
-     * @param \DOMNode $node
-     * @param DOMXPath $xpath
-     * @return array
-     */
-    private function extractServices(\DOMNode $node, DOMXPath $xpath): array
+    private function parseServices(\DOMElement $pdvNode): array
     {
         $services = [];
-        $servicePaths = ['services/service', 'service', 'services/*'];
-
-        foreach ($servicePaths as $path) {
-            $serviceNodes = $xpath->query($path, $node);
-            if ($serviceNodes && $serviceNodes->length > 0) {
-                foreach ($serviceNodes as $serviceNode) {
-                    $serviceName = trim($serviceNode->textContent);
-                    if (!empty($serviceName)) {
-                        $services[] = $serviceName;
-                    }
-                }
-                break;
-            }
+        $serviceNodes = $pdvNode->getElementsByTagName('service');
+        foreach ($serviceNodes as $serviceNode) {
+            $services[] = $serviceNode->nodeValue;
         }
 
-        return array_unique($services);
+        return $services;
     }
 
     /**
-     * Extrait la liste des carburants avec leurs prix
-     * 
-     * @param \DOMNode $node
-     * @param DOMXPath $xpath
-     * @return array<CarburantDTO>
+     * Parse all <prix> nodes into an array of Price DTOs.
      */
-    private function extractCarburants(\DOMNode $node, DOMXPath $xpath): array
+    private function parsePrices(\DOMElement $pdvNode): array
     {
-        $carburants = [];
-        $carburantPaths = ['prix/prix', 'carburants/carburant', 'prix/*', 'carburant'];
+        $prices = [];
+        $priceNodes = $pdvNode->getElementsByTagName('prix');
+        foreach ($priceNodes as $priceNode) {
+            $prices[] = new OpenDataPrice(
+                name: $priceNode->getAttribute('nom'),
+                id: $priceNode->getAttribute('id'),
+                updatedAt: new \DateTime($priceNode->getAttribute('maj')),
+                value: (float) $priceNode->getAttribute('valeur')
+            );
+        }
 
-        foreach ($carburantPaths as $path) {
-            $carburantNodes = $xpath->query($path, $node);
-            if ($carburantNodes && $carburantNodes->length > 0) {
-                foreach ($carburantNodes as $carburantNode) {
-                    $carburantData = [
-                        'nom' => $carburantNode->getAttribute('nom') ?: $carburantNode->getAttribute('type') ?: $carburantNode->nodeName,
-                        'prix' => $carburantNode->getAttribute('valeur') ?: $carburantNode->textContent,
-                        'date_maj' => $carburantNode->getAttribute('maj'),
-                        'disponible' => true
+        return $prices;
+    }
+
+    /**
+     * Parse all <horaires> nodes into an array of hours.
+     */
+    private function parseHours(\DOMElement $pdvNode): array
+    {
+        $hours = [];
+        $hoursNodes = $pdvNode->getElementsByTagName('horaires');
+        foreach ($hoursNodes as $hoursNode) {
+            $days = [];
+            foreach ($hoursNode->getElementsByTagName('jour') as $dayNode) {
+                $day = [
+                    'id' => $dayNode->getAttribute('id'),
+                    'name' => $dayNode->getAttribute('nom'),
+                    'closed' => $dayNode->getAttribute('ferme'),
+                ];
+                $dayHours = [];
+                foreach ($dayNode->getElementsByTagName('horaire') as $hNode) {
+                    $dayHours[] = [
+                        'open' => $hNode->getAttribute('ouverture'),
+                        'close' => $hNode->getAttribute('fermeture'),
                     ];
-
-                    // Nettoyer le prix
-                    if (isset($carburantData['prix'])) {
-                        $carburantData['prix'] = floatval(str_replace(',', '.', $carburantData['prix']));
-                    }
-
-                    $carburants[] = CarburantDTO::fromArray($carburantData);
                 }
-                break;
+                $day['hours'] = $dayHours;
+                $days[] = $day;
             }
+            $hours[] = $days;
         }
 
-        return $carburants;
-    }
-
-    /**
-     * Extrait les horaires d'ouverture
-     * 
-     * @param \DOMNode $node
-     * @param DOMXPath $xpath
-     * @return array
-     */
-    private function extractHoraires(\DOMNode $node, DOMXPath $xpath): array
-    {
-        $horaires = [];
-        $horairePaths = ['horaires/horaire', 'horaire', 'ouverture/*'];
-
-        foreach ($horairePaths as $path) {
-            $horaireNodes = $xpath->query($path, $node);
-            if ($horaireNodes && $horaireNodes->length > 0) {
-                foreach ($horaireNodes as $horaireNode) {
-                    $jour = $horaireNode->getAttribute('jour') ?: $horaireNode->getAttribute('day');
-                    $ouverture = $horaireNode->getAttribute('ouverture') ?: $horaireNode->getAttribute('open');
-                    $fermeture = $horaireNode->getAttribute('fermeture') ?: $horaireNode->getAttribute('close');
-
-                    if ($jour) {
-                        $horaires[$jour] = [
-                            'ouverture' => $ouverture,
-                            'fermeture' => $fermeture
-                        ];
-                    }
-                }
-                break;
-            }
-        }
-
-        return $horaires;
-    }
-
-    /**
-     * Valide et nettoie les données extraites
-     * 
-     * @param array $data
-     * @return array
-     */
-    private function validateAndClean(array $data): array
-    {
-        // Nettoyer les chaînes
-        foreach (['nom', 'adresse', 'ville', 'marque'] as $field) {
-            if (isset($data[$field])) {
-                $data[$field] = trim($data[$field]);
-                if (empty($data[$field])) {
-                    unset($data[$field]);
-                }
-            }
-        }
-
-        // Valider les coordonnées
-        if (isset($data['latitude'])) {
-            $lat = floatval($data['latitude']);
-            $data['latitude'] = ($lat >= -90 && $lat <= 90) ? $lat : null;
-        }
-
-        if (isset($data['longitude'])) {
-            $lng = floatval($data['longitude']);
-            $data['longitude'] = ($lng >= -180 && $lng <= 180) ? $lng : null;
-        }
-
-        // Valider le code postal
-        if (isset($data['code_postal'])) {
-            $cp = preg_replace('/[^0-9]/', '', $data['code_postal']);
-            $data['code_postal'] = (strlen($cp) === 5) ? $cp : null;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Obtient des statistiques sur les données transformées
-     * 
-     * @param array $dtos
-     * @return array
-     */
-    public function getTransformationStats(array $dtos): array
-    {
-        $stats = [
-            'total_stations' => count($dtos),
-            'stations_avec_prix' => 0,
-            'stations_avec_coordonnees' => 0,
-            'types_carburants' => [],
-            'marques' => []
-        ];
-
-        foreach ($dtos as $dto) {
-            if (!empty($dto->carburants)) {
-                $stats['stations_avec_prix']++;
-                foreach ($dto->carburants as $carburant) {
-                    if ($carburant->nom) {
-                        $stats['types_carburants'][$carburant->nom] = 
-                            ($stats['types_carburants'][$carburant->nom] ?? 0) + 1;
-                    }
-                }
-            }
-
-            if ($dto->latitude && $dto->longitude) {
-                $stats['stations_avec_coordonnees']++;
-            }
-
-            if ($dto->marque) {
-                $stats['marques'][$dto->marque] = 
-                    ($stats['marques'][$dto->marque] ?? 0) + 1;
-            }
-        }
-
-        return $stats;
+        return $hours;
     }
 }

@@ -20,6 +20,7 @@ use Symfony\Component\Uid\Uuid;
 #[ApiResource(
     operations: [
         new Get(
+            normalizationContext: ['skip_null_values' => false, 'groups' => ['user:read']],
             uriTemplate: '/me',
         ),
     ]
@@ -30,22 +31,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     use TimestampableEntity;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     private ?string $email = null;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     private string $firstname;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     private string $lastname;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
     #[ORM\Column]
@@ -58,19 +59,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->id = Uuid::v4();
     }
 
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     public function getId(): string
     {
         return $this->id;
     }
 
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    #[Groups(['user.read'])]
+    #[Groups(['user:read'])]
     public function getUpdatedAt(): \DateTimeInterface
     {
         return $this->updatedAt;
