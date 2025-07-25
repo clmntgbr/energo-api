@@ -48,14 +48,14 @@ class Address
         $this->id = Uuid::v4();
     }
 
-    public static function fromDto(OpenDataStation $OpenDataStation): self
+    public static function fromDto(OpenDataStation $openDataStation): self
     {
         $address = new self();
-        $address->setStreet($OpenDataStation->address);
-        $address->setCity($OpenDataStation->city);
-        $address->setPostalCode($OpenDataStation->postalCode);
-        $address->setLatitude($OpenDataStation->latitude);
-        $address->setLongitude($OpenDataStation->longitude);
+        $address->setStreet($openDataStation->address);
+        $address->setCity($openDataStation->city);
+        $address->setPostalCode($openDataStation->postalCode);
+        $address->setLatitude($openDataStation->latitude);
+        $address->setLongitude($openDataStation->longitude);
         $address->setCountry('FR');
 
         return $address;

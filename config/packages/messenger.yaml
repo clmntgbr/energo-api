@@ -51,3 +51,6 @@ framework:
 
             App\Application\Command\CreateOrUpdateGasStation: async-high
             App\Application\Command\CreateOrUpdateGasPrice: async-medium
+            App\Application\Command\GetGooglePlaceSearchNearby: async-low
+            App\Application\Command\GetGooglePlaceDetails: async-low
+            App\Application\Command\CreateGooglePlace: async-low

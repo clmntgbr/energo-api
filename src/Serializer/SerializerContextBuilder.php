@@ -3,8 +3,6 @@
 namespace App\Serializer;
 
 use ApiPlatform\State\SerializerContextBuilderInterface;
-use App\Entity\Group;
-use App\Entity\User;
 use App\Service\ContextService;
 use Symfony\Component\HttpFoundation\Request;
 

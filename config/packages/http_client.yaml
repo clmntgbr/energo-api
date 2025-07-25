@@ -1,0 +1,7 @@
+framework:
+    http_client:
+        scoped_clients:
+            googlePlacesClient:
+                base_uri: '%env(GOOGLE_API_PLACES_URL)%'
+                headers:
+                    X-Goog-Api-Key: '%env(GOOGLE_API_KEY)%'

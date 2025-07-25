@@ -64,7 +64,6 @@ class XmlToDtoTransformer
             city: $this->getSingleNodeValue('ville', $pdvNode),
             services: $this->parseServices($pdvNode),
             prices: $this->parsePrices($pdvNode),
-            hours: $this->parseHours($pdvNode)
         );
     }
 
@@ -109,36 +108,5 @@ class XmlToDtoTransformer
         }
 
         return $prices;
-    }
-
-    /**
-     * Parse all <horaires> nodes into an array of hours.
-     */
-    private function parseHours(\DOMElement $pdvNode): array
-    {
-        $hours = [];
-        $hoursNodes = $pdvNode->getElementsByTagName('horaires');
-        foreach ($hoursNodes as $hoursNode) {
-            $days = [];
-            foreach ($hoursNode->getElementsByTagName('jour') as $dayNode) {
-                $day = [
-                    'id' => $dayNode->getAttribute('id'),
-                    'name' => $dayNode->getAttribute('nom'),
-                    'closed' => $dayNode->getAttribute('ferme'),
-                ];
-                $dayHours = [];
-                foreach ($dayNode->getElementsByTagName('horaire') as $hNode) {
-                    $dayHours[] = [
-                        'open' => $hNode->getAttribute('ouverture'),
-                        'close' => $hNode->getAttribute('fermeture'),
-                    ];
-                }
-                $day['hours'] = $dayHours;
-                $days[] = $day;
-            }
-            $hours[] = $days;
-        }
-
-        return $hours;
     }
 }

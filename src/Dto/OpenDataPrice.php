@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-class OpenDataPrice
+class OpenDataPrice implements \JsonSerializable
 {
     public function __construct(
         public string $name,
@@ -20,5 +20,15 @@ class OpenDataPrice
             updatedAt: new \DateTime($data['updatedAt'] ?? ''),
             value: isset($data['value']) ? (float) $data['value'] : 0.0
         );
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'name' => $this->name,
+            'id' => $this->id,
+            'updatedAt' => $this->updatedAt,
+            'value' => $this->value,
+        ];
     }
 }

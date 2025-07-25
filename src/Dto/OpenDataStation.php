@@ -2,7 +2,9 @@
 
 namespace App\Dto;
 
-class OpenDataStation
+use App\Dto\OpenDataPrice;
+
+class OpenDataStation implements \JsonSerializable
 {
     public function __construct(
         public string $id,
@@ -14,10 +16,23 @@ class OpenDataStation
         public string $city,
         /** @var string[] */
         public array $services = [],
-        /** @var Price[] */
+        /** @var OpenDataPrice[] */
         public array $prices = [],
-        /** @var array[] */
-        public array $hours = [],
     ) {
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'postalCode' => $this->postalCode,
+            'pop' => $this->pop,
+            'address' => $this->address,
+            'city' => $this->city,
+            'services' => $this->services,
+            'prices' => $this->prices,
+        ];
     }
 }

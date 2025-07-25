@@ -36,7 +36,7 @@ class CurrentPrice extends Price
 
         $price->setStation($station);
         $price->setCurrency(Currency::EUR->getValue());
-        $price->setPrice($openDataPrice->value);
+        $price->setValue($openDataPrice->value);
         $price->setDate($openDataPrice->updatedAt);
         $price->setType($type);
 

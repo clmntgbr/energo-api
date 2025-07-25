@@ -22,17 +22,18 @@ class CreateOrUpdateGasStationHandler
     public function __invoke(CreateOrUpdateGasStation $message): void
     {
         /** @var ?Station $station */
-        $station = $this->stationRepository->findOneBy(['stationId' => $message->OpenDataStation->id]);
+        $station = $this->stationRepository->findOneBy(['stationId' => $message->openDataStation->id]);
 
         if (null === $station) {
-            $station = Station::createGasStation($message->OpenDataStation);
+            $station = Station::createGasStation($message->openDataStation);
         }
 
-        $station->updateServices($message->OpenDataStation->services);
+        $station->updateServices($message->openDataStation->services);
+        $station->updateOpenData($message->openDataStation->jsonSerialize());
 
-        foreach ($message->OpenDataStation->prices as $price) {
+        foreach ($message->openDataStation->prices as $price) {
             $this->bus->dispatch(new CreateOrUpdateGasPrice(
-                stationId: $message->OpenDataStation->id,
+                stationId: $message->openDataStation->id,
                 openDataPrice: $price,
             ), [new AmqpStamp('async-medium')]);
         }

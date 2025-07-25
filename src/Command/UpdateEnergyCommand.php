@@ -38,7 +38,7 @@ class UpdateEnergyCommand extends Command
 
         $stations = $this->xmlToDtoTransformer->transformXmlFile(self::XML_NAME);
 
-        $max = 100;
+        $max = 5;
         foreach ($stations as $station) {
             $this->bus->dispatch(new CreateOrUpdateGasStation($station), [new AmqpStamp('async-high')]);
             --$max;

@@ -13,7 +13,7 @@ abstract class Price
 
     #[ORM\Column(type: Types::FLOAT)]
     #[Groups(['station:read'])]
-    protected float $price;
+    protected float $value;
 
     #[ORM\Column(type: Types::STRING)]
     #[Groups(['station:read'])]
@@ -40,14 +40,14 @@ abstract class Price
         return $this->updatedAt;
     }
 
-    public function getPrice(): ?float
+    public function getValue(): ?float
     {
-        return $this->price;
+        return $this->value;
     }
 
-    public function setPrice(float $price): static
+    public function setValue(float $value): static
     {
-        $this->price = $price;
+        $this->value = $value;
 
         return $this;
     }

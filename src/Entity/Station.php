@@ -58,6 +58,11 @@ class Station
     #[Groups(['station:read'])]
     private Address $address;
 
+    #[ORM\OneToOne(targetEntity: GooglePlace::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['station:read'])]
+    private ?GooglePlace $googlePlace = null;
+
     #[ORM\OneToMany(targetEntity: CurrentPrice::class, mappedBy: 'station')]
     #[ORM\OrderBy(['date' => 'DESC'])]
     #[Groups(['station:read'])]
@@ -66,6 +71,9 @@ class Station
     #[ORM\OneToMany(targetEntity: PriceHistory::class, mappedBy: 'station')]
     #[ORM\OrderBy(['date' => 'DESC'])]
     private Collection $priceHistories;
+
+    #[ORM\Column(type: Types::JSON)]
+    private array $openData;
 
     public function __construct()
     {
@@ -93,13 +101,41 @@ class Station
         return $this->updatedAt;
     }
 
-    public static function createGasStation(OpenDataStation $OpenDataStation): self
+    public function markAsPlaceSearchNearbyFailed(): static
+    {
+        $this->setStatus(StationStatus::PLACE_SEARCH_NEARBY_FAILED);
+
+        return $this;
+    }
+
+    public function markAsPlaceSearchNearbySuccess(): static
+    {
+        $this->setStatus(StationStatus::PLACE_SEARCH_NEARBY_SUCCESS);
+
+        return $this;
+    }
+
+    public function markAsPlaceDetailsFailed(): static
+    {
+        $this->setStatus(StationStatus::PLACE_DETAILS_FAILED);
+
+        return $this;
+    }
+
+    public function markAsPlaceDetailsSuccess(): static
+    {
+        $this->setStatus(StationStatus::PLACE_DETAILS_SUCCESS);
+
+        return $this;
+    }
+
+    public static function createGasStation(OpenDataStation $openDataStation): self
     {
         $station = new self();
-        $station->setStationId($OpenDataStation->id);
-        $station->setName($OpenDataStation->address);
-        $station->setPop($OpenDataStation->pop);
-        $station->setAddress(Address::fromDto($OpenDataStation));
+        $station->setStationId($openDataStation->id);
+        $station->setName($openDataStation->address);
+        $station->setPop($openDataStation->pop);
+        $station->setAddress(Address::fromDto($openDataStation));
 
         return $station;
     }
@@ -244,9 +280,40 @@ class Station
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(StationStatus $status): static
     {
-        $this->status = $status;
+        $this->status = $status->getValue();
+
+        return $this;
+    }
+
+    public function getGooglePlace(): ?GooglePlace
+    {
+        return $this->googlePlace;
+    }
+
+    public function setGooglePlace(?GooglePlace $googlePlace): static
+    {
+        $this->googlePlace = $googlePlace;
+
+        return $this;
+    }
+
+    public function getOpenData(): array
+    {
+        return $this->openData;
+    }
+
+    public function updateOpenData(array $openData): static
+    {
+        $this->openData = $openData;
+
+        return $this;
+    }
+
+    public function setOpenData(array $openData): static
+    {
+        $this->openData = $openData;
 
         return $this;
     }
