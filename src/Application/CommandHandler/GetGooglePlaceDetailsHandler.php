@@ -4,6 +4,7 @@ namespace App\Application\CommandHandler;
 
 use App\Application\Command\CreateGooglePlace;
 use App\Application\Command\GetGooglePlaceDetails;
+use App\Application\Command\GetTrustStationGooglePlace;
 use App\Entity\Station;
 use App\Repository\StationRepository;
 use App\Service\GooglePlaceService;
@@ -44,6 +45,9 @@ class GetGooglePlaceDetailsHandler
                 new CreateGooglePlace(
                     stationId: $station->getId(),
                     placeDetails: $placeDetails,
+                ),
+                new GetTrustStationGooglePlace(
+                    id: $station->getId(),
                 ),
             ],
             stamp: new AmqpStamp('async-low'),

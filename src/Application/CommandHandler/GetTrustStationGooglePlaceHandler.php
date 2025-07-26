@@ -29,6 +29,8 @@ class GetTrustStationGooglePlaceHandler
             return;
         }
 
-        dd('get trust station google place');
+        if (null === $station->getGooglePlace()) {
+            return;
+        }
     }
 }
