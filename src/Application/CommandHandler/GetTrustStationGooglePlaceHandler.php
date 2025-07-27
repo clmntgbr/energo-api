@@ -7,6 +7,7 @@ use App\Entity\Station;
 use App\Repository\CurrentPriceRepository;
 use App\Repository\StationRepository;
 use App\Repository\TypeRepository;
+use App\Service\TrustService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -16,6 +17,7 @@ class GetTrustStationGooglePlaceHandler
         private readonly StationRepository $stationRepository,
         private readonly CurrentPriceRepository $currentPriceRepository,
         private readonly TypeRepository $typeRepository,
+        private readonly TrustService $trustService,
     ) {
     }
 
@@ -32,5 +34,9 @@ class GetTrustStationGooglePlaceHandler
         if (null === $station->getGooglePlace()) {
             return;
         }
+
+        $trust = $this->trustService->getTrust($station);
+        $station->setTrust($trust);
+        $this->stationRepository->save($station);
     }
 }
