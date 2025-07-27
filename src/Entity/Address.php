@@ -14,7 +14,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [],
+)]
 class Address
 {
     use UuidTrait;

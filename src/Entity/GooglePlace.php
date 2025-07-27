@@ -12,7 +12,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: GooglePlaceRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [],
+)]
 class GooglePlace
 {
     use UuidTrait;

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Dto\OpenDataPrice;
 use App\Entity\Trait\UuidTrait;
 use App\Enum\Currency;
@@ -11,6 +12,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: PriceHistoryRepository::class)]
+#[ApiResource(
+    operations: [],
+)]
 class PriceHistory extends Price
 {
     use UuidTrait;

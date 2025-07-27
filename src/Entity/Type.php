@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Trait\UuidTrait;
 use App\Repository\TypeRepository;
 use Doctrine\DBAL\Types\Types;
@@ -11,6 +12,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: TypeRepository::class)]
+#[ApiResource(
+    operations: [],
+)]
 class Type
 {
     use UuidTrait;
