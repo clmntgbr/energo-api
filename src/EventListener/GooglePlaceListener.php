@@ -6,11 +6,9 @@ use App\Application\Command\GetGooglePlaceSearchNearby;
 use App\Entity\GooglePlace;
 use App\Repository\GooglePlaceRepository;
 use App\Repository\StationRepository;
-use App\Service\MessageBusService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Events;
-use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 
 #[AsDoctrineListener(event: Events::postPersist)]
 final class GooglePlaceListener

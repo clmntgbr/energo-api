@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Application\Command\GetGooglePlaceSearchNearby;
+use App\Dto\MessageBus;
 use App\Entity\Station;
 use App\Service\MessageBusService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
@@ -27,11 +28,13 @@ final class StationListener
 
         $this->bus->dispatch(
             messages: [
-                new GetGooglePlaceSearchNearby(
-                    id: $entity->getId(),
-                ),
+                new MessageBus(
+                    command: new GetGooglePlaceSearchNearby(
+                        id: $entity->getId(),
+                    ),
+                    stamp: new AmqpStamp('async-medium'),
+                )
             ],
-            stamp: new AmqpStamp('async-medium'),
         );
     }
 }

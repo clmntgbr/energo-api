@@ -2,7 +2,7 @@
 
 namespace App\Application\Command;
 
-class CreateOrUpdateService
+class CreateOrUpdateService implements CommandInterface
 {
     public function __construct(
         public readonly string $stationId,

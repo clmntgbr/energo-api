@@ -3,7 +3,6 @@
 namespace App\EventListener;
 
 use App\Entity\Service;
-use App\Service\MessageBusService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -15,7 +14,6 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class ServiceListener
 {
     public function __construct(
-        private MessageBusService $bus,
         private SluggerInterface $slugger,
     ) {
     }

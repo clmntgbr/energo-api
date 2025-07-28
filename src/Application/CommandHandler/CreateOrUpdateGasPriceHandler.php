@@ -5,11 +5,13 @@ namespace App\Application\CommandHandler;
 use App\Application\Command\CreateGasCurrentPrice;
 use App\Application\Command\CreateGasPriceHistory;
 use App\Application\Command\CreateOrUpdateGasPrice;
+use App\Dto\MessageBus;
 use App\Entity\Station;
 use App\Repository\CurrentPriceRepository;
 use App\Repository\StationRepository;
 use App\Service\MessageBusService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 
 #[AsMessageHandler]
 class CreateOrUpdateGasPriceHandler
@@ -48,13 +50,19 @@ class CreateOrUpdateGasPriceHandler
     {
         $this->bus->dispatch(
             messages: [
-                new CreateGasCurrentPrice(
-                    stationId: $message->stationId,
-                    openDataPrice: $message->openDataPrice
+                new MessageBus(
+                    command: new CreateGasCurrentPrice(
+                        stationId: $message->stationId,
+                        openDataPrice: $message->openDataPrice
+                    ),
+                    stamp: new AmqpStamp('async-medium'),
                 ),
-                new CreateGasPriceHistory(
-                    stationId: $message->stationId,
-                    openDataPrice: $message->openDataPrice
+                new MessageBus(
+                    command: new CreateGasPriceHistory(
+                        stationId: $message->stationId,
+                        openDataPrice: $message->openDataPrice
+                    ),
+                    stamp: new AmqpStamp('async-low'),
                 ),
             ]
         );

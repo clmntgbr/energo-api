@@ -5,18 +5,19 @@ namespace App\Application\CommandHandler;
 use App\Application\Command\CreateOrUpdateGasPrice;
 use App\Application\Command\CreateOrUpdateGasStation;
 use App\Application\Command\CreateOrUpdateService;
+use App\Dto\MessageBus;
 use App\Entity\Station;
 use App\Repository\StationRepository;
+use App\Service\MessageBusService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 class CreateOrUpdateGasStationHandler
 {
     public function __construct(
         private readonly StationRepository $stationRepository,
-        private readonly MessageBusInterface $bus,
+        private readonly MessageBusService $bus,
     ) {
     }
 
@@ -33,17 +34,31 @@ class CreateOrUpdateGasStationHandler
         $station->clearServices();
 
         foreach ($message->openDataStation->prices as $price) {
-            $this->bus->dispatch(new CreateOrUpdateGasPrice(
-                stationId: $message->openDataStation->id,
-                openDataPrice: $price,
-            ), [new AmqpStamp('async-medium')]);
+            $this->bus->dispatch(
+                messages: [
+                    new MessageBus(
+                        command: new CreateOrUpdateGasPrice(
+                            stationId: $message->openDataStation->id,
+                            openDataPrice: $price,
+                        ),
+                        stamp: new AmqpStamp('async-medium'),
+                    ),
+                ],
+            );
         }
 
         foreach ($message->openDataStation->services as $service) {
-            $this->bus->dispatch(new CreateOrUpdateService(
-                stationId: $message->openDataStation->id,
-                name: $service,
-            ), [new AmqpStamp('async-low')]);
+            $this->bus->dispatch(
+                messages: [
+                    new MessageBus(
+                        command: new CreateOrUpdateService(
+                            stationId: $message->openDataStation->id,
+                            name: $service,
+                        ),
+                        stamp: new AmqpStamp('async-low'),
+                    ),
+                ],
+            );
         }
 
         $this->stationRepository->save($station, true);

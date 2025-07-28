@@ -3,6 +3,8 @@
 namespace App\Command;
 
 use App\Application\Command\CreateOrUpdateGasStation;
+use App\Dto\MessageBus;
+use App\Service\MessageBusService;
 use App\Service\OpenDataService;
 use App\Service\XmlToDtoTransformer;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -10,7 +12,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsCommand(
     name: 'app:update:energy',
@@ -25,7 +26,7 @@ class UpdateEnergyCommand extends Command
     public function __construct(
         private readonly OpenDataService $openDataService,
         private readonly XmlToDtoTransformer $xmlToDtoTransformer,
-        private readonly MessageBusInterface $bus,
+        private readonly MessageBusService $bus,
     ) {
         parent::__construct();
     }
@@ -44,7 +45,14 @@ class UpdateEnergyCommand extends Command
 
         $max = 30;
         foreach ($stations as $station) {
-            $this->bus->dispatch(new CreateOrUpdateGasStation($station), [new AmqpStamp('async-high')]);
+            $this->bus->dispatch(
+                messages: [
+                    new MessageBus(
+                        command: new CreateOrUpdateGasStation($station),
+                        stamp: new AmqpStamp('async-high'),
+                    ),
+                ],
+            );
             --$max;
             if (0 === $max) {
                 break;

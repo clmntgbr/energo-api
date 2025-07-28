@@ -4,7 +4,7 @@ namespace App\Application\Command;
 
 use App\Dto\OpenDataPrice;
 
-class CreateOrUpdateGasPrice
+class CreateOrUpdateGasPrice implements CommandInterface
 {
     public function __construct(
         public readonly string $stationId,

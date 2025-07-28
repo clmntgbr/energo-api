@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Application\Command\CommandInterface;
+use App\Dto\MessageBus;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -12,12 +14,15 @@ class MessageBusService
     ) {
     }
 
-    public function dispatch(array $messages, ?AmqpStamp $stamp = null): void
+    /**
+     * @param MessageBus[] $messages
+     */
+    public function dispatch(array $messages): void
     {
         foreach ($messages as $message) {
             $this->bus->dispatch(
-                message: $message,
-                stamps: $stamp ? [$stamp] : []
+                message: $message->command,
+                stamps: $message->stamp ? [$message->stamp] : []
             );
         }
     }

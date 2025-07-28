@@ -4,6 +4,7 @@ namespace App\Application\CommandHandler;
 
 use App\Application\Command\GetGooglePlaceDetails;
 use App\Application\Command\GetGooglePlaceSearchNearby;
+use App\Dto\MessageBus;
 use App\Entity\Station;
 use App\Repository\StationRepository;
 use App\Service\GooglePlaceService;
@@ -44,12 +45,14 @@ class GetGooglePlaceSearchNearbyHandler
 
         $this->bus->dispatch(
             messages: [
-                new GetGooglePlaceDetails(
-                    id: $station->getId(),
-                    placeId: $placeSearchNearby->id,
-                ),
+                new MessageBus(
+                    command: new GetGooglePlaceDetails(
+                        id: $station->getId(),
+                        placeId: $placeSearchNearby->id,
+                    ),
+                    stamp: new AmqpStamp('async-medium'),
+                )
             ],
-            stamp: new AmqpStamp('async-medium'),
         );
     }
 }

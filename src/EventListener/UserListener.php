@@ -8,7 +8,6 @@ use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsDoctrineListener(event: Events::prePersist)]
@@ -18,7 +17,6 @@ final class UserListener
 {
     public function __construct(
         private UserPasswordHasherInterface $userPasswordHasher,
-        private MessageBusInterface $bus,
     ) {
     }
 

@@ -8,7 +8,6 @@ use App\Entity\GooglePlace;
 use App\Entity\Station;
 use App\Repository\StationRepository;
 use App\Service\GooglePlaceService;
-use App\Service\MessageBusService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -17,7 +16,6 @@ class CreateGooglePlaceHandler
     public function __construct(
         private readonly StationRepository $stationRepository,
         private readonly GooglePlaceService $googlePlaceService,
-        private readonly MessageBusService $bus,
     ) {
     }
 
