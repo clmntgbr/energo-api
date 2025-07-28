@@ -32,17 +32,17 @@ class UpdateEnergyCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        //Clean up
+        // Clean up
         $this->openDataService->remove(self::XML_NAME);
         $this->openDataService->remove(self::ZIP_NAME);
-        
+
         $this->openDataService->get(self::ZIP_NAME);
         $this->openDataService->unzip(self::ZIP_NAME, self::XML_NAME);
         $this->openDataService->remove(self::ZIP_NAME);
 
         $stations = $this->xmlToDtoTransformer->transformXmlFile(self::XML_NAME);
 
-        $max = 5;
+        $max = 10;
         foreach ($stations as $station) {
             $this->bus->dispatch(new CreateOrUpdateGasStation($station), [new AmqpStamp('async-high')]);
             --$max;

@@ -2,15 +2,11 @@
 
 namespace App\Application\CommandHandler;
 
-use App\Application\Command\CreateGasCurrentPrice;
 use App\Application\Command\CreateOrUpdateService;
-use App\Entity\CurrentPrice;
 use App\Entity\Service;
 use App\Entity\Station;
-use App\Repository\CurrentPriceRepository;
-use App\Repository\StationRepository;
-use App\Repository\TypeRepository;
 use App\Repository\ServiceRepository;
+use App\Repository\StationRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]

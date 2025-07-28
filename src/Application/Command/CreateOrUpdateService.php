@@ -2,8 +2,6 @@
 
 namespace App\Application\Command;
 
-use App\Dto\OpenDataPrice;
-
 class CreateOrUpdateService
 {
     public function __construct(

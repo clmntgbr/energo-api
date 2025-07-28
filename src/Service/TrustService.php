@@ -20,6 +20,10 @@ class TrustService
 
         $googleParts = [];
         foreach ($googleComponents as $component) {
+            if (!isset($component['types']) || !is_array($component['types'])) {
+                continue;
+            }
+
             foreach ($component['types'] as $type) {
                 if (in_array($type, ['street_number', 'route', 'locality', 'postal_code', 'country'])) {
                     $googleParts[$type] = $component['longText'];
