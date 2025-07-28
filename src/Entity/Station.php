@@ -20,7 +20,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: StationRepository::class)]
+
 #[ApiResource(
+    paginationItemsPerPage: 10,
     operations: [
         new Get(
             normalizationContext: ['skip_null_values' => false],
@@ -54,7 +56,7 @@ class Station
     private string $pop;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read:full', 'station:read'])]
+    #[Groups(['station:read:full'])]
     private string $status;
 
     #[ORM\Column(type: Types::JSON)]

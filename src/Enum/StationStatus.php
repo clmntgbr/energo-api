@@ -13,10 +13,9 @@ enum StationStatus: string
     case PLACE_DETAILS_FAILED = 'PLACE_DETAILS_FAILED';
 
     case VALIDATION_PENDING = 'VALIDATION_PENDING';
+    
     case VALIDATED = 'VALIDATED';
-
     case REJECTED = 'REJECTED';
-    case ARCHIVED = 'ARCHIVED';
 
     public function getValue(): string
     {
