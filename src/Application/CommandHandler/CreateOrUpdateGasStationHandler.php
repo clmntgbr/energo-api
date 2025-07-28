@@ -33,8 +33,8 @@ class CreateOrUpdateGasStationHandler
         $station->updateOpenData($message->openDataStation->jsonSerialize());
         $station->clearServices();
 
-        foreach ($message->openDataStation->prices as $price) {
-            $this->bus->dispatch(
+        array_map(
+            fn($price) => $this->bus->dispatch(
                 messages: [
                     new MessageBus(
                         command: new CreateOrUpdateGasPrice(
@@ -44,11 +44,12 @@ class CreateOrUpdateGasStationHandler
                         stamp: new AmqpStamp('async-medium'),
                     ),
                 ],
-            );
-        }
+            ),
+            $message->openDataStation->prices
+        );
 
-        foreach ($message->openDataStation->services as $service) {
-            $this->bus->dispatch(
+        array_map(
+            fn($service) => $this->bus->dispatch(
                 messages: [
                     new MessageBus(
                         command: new CreateOrUpdateService(
@@ -58,8 +59,9 @@ class CreateOrUpdateGasStationHandler
                         stamp: new AmqpStamp('async-low'),
                     ),
                 ],
-            );
-        }
+            ),
+            $message->openDataStation->services
+        );
 
         $this->stationRepository->save($station, true);
     }

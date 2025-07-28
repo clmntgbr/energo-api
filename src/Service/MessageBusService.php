@@ -19,11 +19,12 @@ class MessageBusService
      */
     public function dispatch(array $messages): void
     {
-        foreach ($messages as $message) {
-            $this->bus->dispatch(
+        array_map(
+            fn($message) => $this->bus->dispatch(
                 message: $message->command,
                 stamps: $message->stamp ? [$message->stamp] : []
-            );
-        }
+            ),
+            $messages
+        );
     }
 }

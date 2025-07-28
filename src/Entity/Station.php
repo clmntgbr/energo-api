@@ -386,9 +386,10 @@ class Station
     {
         $this->services->clear();
 
-        foreach ($services as $service) {
-            $this->addService(Service::createService($service));
-        }
+        array_map(
+            fn($service) => $this->addService(Service::createService($service)),
+            $services
+        );
 
         return $this;
     }
