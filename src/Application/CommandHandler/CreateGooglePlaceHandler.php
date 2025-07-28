@@ -45,6 +45,7 @@ class CreateGooglePlaceHandler
         $station->setGooglePlace($googlePlace);
         $station->setAddress(Address::fromPlaceDetails($message->placeDetails));
         $station->markAsPlaceDetailsSuccess();
+        $station->markAsValidationPending();
 
         $this->stationRepository->save($station, true);
     }

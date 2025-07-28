@@ -27,7 +27,6 @@ class GetTrustStationGooglePlaceHandler
         $station = $this->stationRepository->findOneBy(['id' => $message->id]);
 
         if (null === $station) {
-
             return;
         }
 

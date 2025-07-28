@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Entity\Trait\UuidTrait;
 use App\Repository\TypeRepository;
 use Doctrine\DBAL\Types\Types;
@@ -13,7 +14,12 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: TypeRepository::class)]
 #[ApiResource(
-    operations: [],
+    operations: [
+        new GetCollection(
+            normalizationContext: ['skip_null_values' => false],
+            paginationEnabled: false,
+        ),
+    ],
 )]
 class Type
 {
@@ -21,11 +27,11 @@ class Type
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read:full', 'station:read'])]
+    #[Groups(['station:read:full', 'station:read', 'type:read'])]
     private string $name;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read:full', 'station:read'])]
+    #[Groups(['station:read:full', 'station:read', 'type:read'])]
     private string $typeId;
 
     public function __construct()

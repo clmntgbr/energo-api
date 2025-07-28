@@ -3,13 +3,10 @@
 namespace App\EventListener;
 
 use App\Application\Command\GetGooglePlaceSearchNearby;
-use App\Application\Command\GetTrustStationGooglePlace;
 use App\Entity\Station;
-use App\Enum\StationStatus;
 use App\Service\MessageBusService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PostPersistEventArgs;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 

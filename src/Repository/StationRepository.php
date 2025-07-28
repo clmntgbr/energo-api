@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Dto\GeolocationStationsParameters;
 use App\Entity\Station;
 use App\Enum\StationStatus;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,7 +17,7 @@ class StationRepository extends AbstractRepository
     /**
      * @return array<int, array{station: Station, distance: string}>
      */
-    public function findStationsWithinRadius(float $latitude, float $longitude, int $radiusMeters): array
+    public function findStationsWithinRadius(GeolocationStationsParameters $geolocationStationsParameters): array
     {
         $qb = $this->createQueryBuilder('s')
             ->select('s as station')
@@ -39,12 +40,25 @@ class StationRepository extends AbstractRepository
                     * sin(radians(a.latitude))
                 )
             ) <= :radius')
-            ->andWhere('s.status = :status')
+            // ->andWhere('s.status = :status')
             ->orderBy('distance', 'ASC')
-            ->setParameter('latitude', $latitude)
-            ->setParameter('longitude', $longitude)
-            ->setParameter('radius', $radiusMeters)
-            ->setParameter('status', StationStatus::VALIDATED->getValue());
+            // ->setParameter('status', StationStatus::VALIDATED->getValue())
+            ->setParameter('latitude', $geolocationStationsParameters->latitude)
+            ->setParameter('longitude', $geolocationStationsParameters->longitude)
+            ->setParameter('radius', $geolocationStationsParameters->radius);
+
+        if (!empty($geolocationStationsParameters->typeIds)) {
+            $qb->innerJoin('s.currentPrices', 'cp')
+                ->innerJoin('cp.type', 't')
+                ->andWhere('t.id IN (:typeIds)')
+                ->setParameter('typeIds', $geolocationStationsParameters->typeIds);
+        }
+
+        if (!empty($geolocationStationsParameters->serviceIds)) {
+            $qb->innerJoin('s.services', 'ss')
+                ->andWhere('ss.id IN (:serviceIds)')
+                ->setParameter('serviceIds', $geolocationStationsParameters->serviceIds);
+        }
 
         return $qb->getQuery()->getResult();
     }

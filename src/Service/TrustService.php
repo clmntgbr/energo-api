@@ -12,10 +12,10 @@ class TrustService
         $googleComponents = $station->getGooglePlace()->getPlaceDetails()['addressComponents'] ?? [];
 
         $stationParts = [
-            'route'         => $address->getStreet(),
-            'locality'      => $address->getCity(),
-            'postal_code'   => $address->getPostalCode(),
-            'country'       => $address->getCountry(),
+            'route' => $address->getStreet(),
+            'locality' => $address->getCity(),
+            'postal_code' => $address->getPostalCode(),
+            'country' => $address->getCountry(),
         ];
 
         $googleParts = [];
@@ -29,32 +29,33 @@ class TrustService
 
         $totalScore = 0;
         $totalWeight = 0;
-        
+
         foreach ($stationParts as $key => $value) {
             if (isset($googleParts[$key]) && $value && $googleParts[$key]) {
                 $stationValue = mb_strtolower(trim($value));
                 $googleValue = mb_strtolower(trim($googleParts[$key]));
-                
-                $weight = match($key) {
+
+                $weight = match ($key) {
                     'postal_code' => 0.3,
                     'locality' => 0.3,
                     'route' => 0.25,
                     'country' => 0.15,
-                    default => 0.1
+                    default => 0.1,
                 };
-                
+
                 $maxLength = max(strlen($stationValue), strlen($googleValue));
                 if ($maxLength > 0) {
                     $distance = levenshtein($stationValue, $googleValue);
                     $similarity = 1 - ($distance / $maxLength);
-                    
+
                     $totalScore += $similarity * $weight;
                     $totalWeight += $weight;
                 }
             }
         }
-        
+
         $score = $totalWeight > 0 ? $totalScore / $totalWeight : 0.0;
+
         return $score;
     }
 }

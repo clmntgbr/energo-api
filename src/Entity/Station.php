@@ -20,7 +20,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: StationRepository::class)]
-
 #[ApiResource(
     paginationItemsPerPage: 10,
     operations: [
@@ -67,10 +66,6 @@ class Station
     #[Groups(['station:read:full'])]
     private ?float $trust = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    #[Groups(['station:read:full'])]
-    private array $services;
-
     #[ORM\OneToOne(targetEntity: Address::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['station:read:full', 'station:read'])]
@@ -90,6 +85,11 @@ class Station
     #[ORM\OrderBy(['date' => 'DESC'])]
     private Collection $priceHistories;
 
+    #[ORM\ManyToMany(targetEntity: Service::class, inversedBy: 'stations', cascade: ['persist', 'remove'])]
+    #[ORM\JoinTable(name: 'station_services')]
+    #[Groups(['station:read:full'])]
+    private Collection $services;
+
     #[ORM\Column(type: Types::JSON)]
     private array $openData;
 
@@ -100,6 +100,7 @@ class Station
         $this->statuses = [StationStatus::IMPORTED->getValue()];
         $this->currentPrices = new ArrayCollection();
         $this->priceHistories = new ArrayCollection();
+        $this->services = new ArrayCollection();
     }
 
     #[Groups(['station:read:full', 'station:read'])]
@@ -287,25 +288,6 @@ class Station
         return $this;
     }
 
-    public function getServices(): array
-    {
-        return $this->services;
-    }
-
-    public function updateServices(array $services): static
-    {
-        $this->services = $services;
-
-        return $this;
-    }
-
-    public function setServices(array $services): static
-    {
-        $this->services = $services;
-
-        return $this;
-    }
-
     public function getStatus(): ?string
     {
         return $this->status;
@@ -369,6 +351,41 @@ class Station
     public function setTrust(?float $trust): static
     {
         $this->trust = $trust;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Service>
+     */
+    public function getServices(): Collection
+    {
+        return $this->services;
+    }
+
+    public function addService(Service $service): static
+    {
+        if (!$this->services->contains($service)) {
+            $this->services->add($service);
+        }
+
+        return $this;
+    }
+
+    public function removeService(Service $service): static
+    {
+        $this->services->removeElement($service);
+
+        return $this;
+    }
+
+    public function updateServices(array $services): static
+    {
+        $this->services->clear();
+
+        foreach ($services as $service) {
+            $this->addService(Service::createService($service));
+        }
 
         return $this;
     }
