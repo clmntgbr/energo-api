@@ -9,6 +9,7 @@ use App\Entity\Station;
 use App\Repository\StationRepository;
 use App\Service\GooglePlaceService;
 use App\Service\MessageBusService;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 
@@ -19,6 +20,7 @@ class GetGooglePlaceDetailsHandler
         private readonly StationRepository $stationRepository,
         private readonly GooglePlaceService $googlePlaceService,
         private readonly MessageBusService $bus,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -33,7 +35,13 @@ class GetGooglePlaceDetailsHandler
 
         try {
             $placeDetails = $this->googlePlaceService->getPlaceDetails($message->placeId);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            $this->logger->error('Failed to get place details from Google Places API.', [
+                'stationId' => $station->getId(),
+                'placeId' => $message->placeId,
+                'exception' => $exception->getMessage(),
+            ]);
+
             $station->markAsPlaceDetailsFailed();
             $this->stationRepository->save($station);
 
@@ -46,6 +54,12 @@ class GetGooglePlaceDetailsHandler
                     stationId: $station->getId(),
                     placeDetails: $placeDetails,
                 ),
+            ],
+            stamp: new AmqpStamp('async-high'),
+        );
+
+        $this->bus->dispatch(
+            messages: [
                 new GetTrustStationGooglePlace(
                     id: $station->getId(),
                 ),

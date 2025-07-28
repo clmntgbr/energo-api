@@ -71,7 +71,7 @@ class Station
     #[Groups(['station:read:full', 'station:read'])]
     private Address $address;
 
-    #[ORM\OneToOne(targetEntity: GooglePlace::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: GooglePlace::class, cascade: ['persist', 'remove'], inversedBy: 'station')]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['station:read:full'])]
     private ?GooglePlace $googlePlace = null;
@@ -149,6 +149,14 @@ class Station
     {
         $this->setStatus(StationStatus::PLACE_DETAILS_SUCCESS);
         $this->statuses[] = StationStatus::PLACE_DETAILS_SUCCESS->getValue();
+
+        return $this;
+    }
+
+    public function markAsDuplicateDetected(): static
+    {
+        $this->setStatus(StationStatus::DUPLICATE_DETECTED);
+        $this->statuses[] = StationStatus::DUPLICATE_DETECTED->getValue();
 
         return $this;
     }
@@ -300,18 +308,6 @@ class Station
         return $this;
     }
 
-    public function getGooglePlace(): ?GooglePlace
-    {
-        return $this->googlePlace;
-    }
-
-    public function setGooglePlace(?GooglePlace $googlePlace): static
-    {
-        $this->googlePlace = $googlePlace;
-
-        return $this;
-    }
-
     public function getOpenData(): array
     {
         return $this->openData;
@@ -393,6 +389,18 @@ class Station
         foreach ($services as $service) {
             $this->addService(Service::createService($service));
         }
+
+        return $this;
+    }
+
+    public function getGooglePlace(): ?GooglePlace
+    {
+        return $this->googlePlace;
+    }
+
+    public function setGooglePlace(?GooglePlace $googlePlace): static
+    {
+        $this->googlePlace = $googlePlace;
 
         return $this;
     }

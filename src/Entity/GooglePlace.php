@@ -24,36 +24,39 @@ class GooglePlace
     #[Groups(['station:read:full'])]
     private string $placeId;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?string $internationalPhoneNumber = null;
 
-    #[ORM\Column(type: Types::FLOAT)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?float $rating = null;
 
-    #[ORM\Column(type: Types::FLOAT)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?float $userRatingCount = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['station:read:full'])]
     private string $businessStatus;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?string $websiteUri = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?string $googleMapsDirectionsUri = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true  )]
     #[Groups(['station:read:full'])]
     private ?string $googleMapsPlaceUri = null;
 
     #[ORM\Column(type: Types::JSON)]
     private array $placeDetails = [];
+
+    #[ORM\OneToOne(targetEntity: Station::class, mappedBy: 'googlePlace')]
+    private Station $station;
 
     public function __construct()
     {
@@ -170,6 +173,18 @@ class GooglePlace
     public function setPlaceDetails(array $placeDetails = []): static
     {
         $this->placeDetails = $placeDetails;
+
+        return $this;
+    }
+
+    public function getStation(): ?Station
+    {
+        return $this->station;
+    }
+
+    public function setStation(?Station $station = null): static
+    {
+        $this->station = $station;
 
         return $this;
     }

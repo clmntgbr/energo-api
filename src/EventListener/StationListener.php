@@ -31,7 +31,7 @@ final class StationListener
                     id: $entity->getId(),
                 ),
             ],
-            stamp: new AmqpStamp('async-low'),
+            stamp: new AmqpStamp('async-medium'),
         );
     }
 }

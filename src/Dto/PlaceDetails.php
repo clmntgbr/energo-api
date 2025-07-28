@@ -6,6 +6,9 @@ use Symfony\Component\Serializer\Attribute\SerializedPath;
 
 class PlaceDetails implements \JsonSerializable
 {
+    public ?float $rating = null;
+    public ?float $userRatingCount = null;
+    
     public function __construct(
         #[SerializedPath('[id]')]
         public ?string $id = null,
@@ -17,14 +20,14 @@ class PlaceDetails implements \JsonSerializable
         public ?float $latitude = null,
         #[SerializedPath('[location][longitude]')]
         public ?float $longitude = null,
-        #[SerializedPath('[rating]')]
-        public ?float $rating = null,
         #[SerializedPath('[websiteUri]')]
         public ?string $websiteUri = null,
         #[SerializedPath('[businessStatus]')]
         public ?string $businessStatus = null,
+        #[SerializedPath('[rating]')]
+        float|int|null $rating = null,
         #[SerializedPath('[userRatingCount]')]
-        public ?int $userRatingCount = null,
+        float|int|null $userRatingCount = null,
         #[SerializedPath('[googleMapsLinks][directionsUri]')]
         public ?string $googleMapsDirectionsUri = null,
         #[SerializedPath('[googleMapsLinks][placeUri]')]
@@ -32,6 +35,8 @@ class PlaceDetails implements \JsonSerializable
         #[SerializedPath('[addressComponents]')]
         public ?array $addressComponents = null,
     ) {
+        $this->rating = (float) $rating;
+        $this->userRatingCount = (float) $userRatingCount;
     }
 
     public function jsonSerialize(): array

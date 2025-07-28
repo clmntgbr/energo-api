@@ -49,7 +49,7 @@ class GetGooglePlaceSearchNearbyHandler
                     placeId: $placeSearchNearby->id,
                 ),
             ],
-            stamp: new AmqpStamp('async-low'),
+            stamp: new AmqpStamp('async-medium'),
         );
     }
 }
