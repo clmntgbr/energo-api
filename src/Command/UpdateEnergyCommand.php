@@ -19,9 +19,8 @@ use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 )]
 class UpdateEnergyCommand extends Command
 {
-    private const DIRECTORY = __DIR__.'/../../public/data';
-    private const ZIP_NAME = self::DIRECTORY.'/opendata.zip';
-    private const XML_NAME = self::DIRECTORY.'/opendata.xml';
+    public const ZIP_NAME = OpenDataService::DIRECTORY.'/opendata.zip';
+    public const XML_NAME = OpenDataService::DIRECTORY.'/opendata.xml';
 
     public function __construct(
         private readonly OpenDataService $openDataService,
@@ -37,29 +36,29 @@ class UpdateEnergyCommand extends Command
         $this->openDataService->remove(self::XML_NAME);
         $this->openDataService->remove(self::ZIP_NAME);
 
-        $this->openDataService->get(self::ZIP_NAME);
+        $this->openDataService->get(self::ZIP_NAME, OpenDataService::URL_INSTANTANEOUS);
         $this->openDataService->unzip(self::ZIP_NAME, self::XML_NAME);
         $this->openDataService->remove(self::ZIP_NAME);
 
         $stations = $this->xmlToDtoTransformer->transformXmlFile(self::XML_NAME);
 
-        $max = 30;
-        foreach ($stations as $station) {
-            $this->bus->dispatch(
-                messages: [
-                    new MessageBus(
-                        command: new CreateOrUpdateGasStation($station),
-                        stamp: new AmqpStamp('async-high'),
-                    ),
-                ],
-            );
-            --$max;
-            if (0 === $max) {
-                break;
-            }
-        }
+        // $max = 30;
+        // foreach ($stations as $station) {
+        //     $this->bus->dispatch(
+        //         messages: [
+        //             new MessageBus(
+        //                 command: new CreateOrUpdateGasStation($station),
+        //                 stamp: new AmqpStamp('async-high'),
+        //             ),
+        //         ],
+        //     );
+        //     --$max;
+        //     if (0 === $max) {
+        //         break;
+        //     }
+        // }
 
-        $this->openDataService->remove(self::XML_NAME);
+        // $this->openDataService->remove(self::XML_NAME);
 
         return Command::SUCCESS;
     }

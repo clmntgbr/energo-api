@@ -2,18 +2,21 @@
 
 namespace App\Service;
 
+use App\Command\UpdateEnergyCommand;
+
 class OpenDataService
 {
-    private const URL = 'https://donnees.roulez-eco.fr/opendata/instantane';
-    private const DIRECTORY = __DIR__.'/../../public/data';
+    public const URL_INSTANTANEOUS = 'https://donnees.roulez-eco.fr/opendata/instantane';
+    public const URL_HISTORICAL = 'https://donnees.roulez-eco.fr/opendata/annee/';
+    public const DIRECTORY = __DIR__.'/../../public/data';
 
     public function __construct()
     {
     }
 
-    public function get(string $zipFilePath)
+    public function get(string $zipFilePath, string $url)
     {
-        $fileData = file_get_contents(self::URL);
+        $fileData = file_get_contents($url);
         if (false === $fileData) {
             throw new \RuntimeException('Failed to download the zip file.');
         }
