@@ -379,6 +379,13 @@ class Station
         return $this;
     }
 
+    public function clearServices(): static
+    {
+        $this->services->clear();
+
+        return $this;
+    }
+
     public function updateServices(array $services): static
     {
         $this->services->clear();

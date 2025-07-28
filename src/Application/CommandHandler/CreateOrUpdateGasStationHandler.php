@@ -4,6 +4,7 @@ namespace App\Application\CommandHandler;
 
 use App\Application\Command\CreateOrUpdateGasPrice;
 use App\Application\Command\CreateOrUpdateGasStation;
+use App\Application\Command\CreateOrUpdateService;
 use App\Entity\Station;
 use App\Repository\StationRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -28,14 +29,21 @@ class CreateOrUpdateGasStationHandler
             $station = Station::createGasStation($message->openDataStation);
         }
 
-        $station->updateServices($message->openDataStation->services);
         $station->updateOpenData($message->openDataStation->jsonSerialize());
+        $station->clearServices();
 
         foreach ($message->openDataStation->prices as $price) {
             $this->bus->dispatch(new CreateOrUpdateGasPrice(
                 stationId: $message->openDataStation->id,
                 openDataPrice: $price,
             ), [new AmqpStamp('async-medium')]);
+        }
+
+        foreach ($message->openDataStation->services as $service) {
+            $this->bus->dispatch(new CreateOrUpdateService(
+                stationId: $message->openDataStation->id,
+                name: $service,
+            ), [new AmqpStamp('async-low')]);
         }
 
         $this->stationRepository->save($station, true);

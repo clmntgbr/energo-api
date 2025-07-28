@@ -32,6 +32,10 @@ class UpdateEnergyCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        //Clean up
+        $this->openDataService->remove(self::XML_NAME);
+        $this->openDataService->remove(self::ZIP_NAME);
+        
         $this->openDataService->get(self::ZIP_NAME);
         $this->openDataService->unzip(self::ZIP_NAME, self::XML_NAME);
         $this->openDataService->remove(self::ZIP_NAME);

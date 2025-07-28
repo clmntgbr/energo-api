@@ -54,4 +54,5 @@ framework:
             App\Application\Command\GetGooglePlaceSearchNearby: async-low
             App\Application\Command\GetGooglePlaceDetails: async-low
             App\Application\Command\CreateGooglePlace: async-medium
+            App\Application\Command\CreateOrUpdateService: async-low
             App\Application\Command\GetTrustStationGooglePlace: async-low
