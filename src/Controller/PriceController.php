@@ -24,24 +24,6 @@ class PriceController extends AbstractController
     ) {
     }
 
-    #[Route('/prices/history/{stationId}/{typeId}/{year}', name: 'stations_prices_history', methods: ['GET'])]
-    public function pricesHistory(
-        #[MapEntity(mapping: ['stationId' => 'id'])]
-        Station $station,
-        #[MapEntity(mapping: ['typeId' => 'id'])]
-        Type $type,
-        int $year,
-        Context $context,
-    ): JsonResponse {
-        $data = $this->priceHistoryRepository->findByStationAndTypeAndYear($station, $type, $year);
-
-        return new JsonResponse(
-            data: $this->serializer->serialize($data, 'json', $context->getGroups()),
-            status: Response::HTTP_OK,
-            json: true
-        );
-    }
-
     #[Route('/prices/current/{stationId}', name: 'stations_prices_current', methods: ['GET'])]
     public function pricesCurrent(
         #[MapEntity(mapping: ['stationId' => 'id'])]

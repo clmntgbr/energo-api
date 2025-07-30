@@ -13,19 +13,4 @@ class PriceHistoryRepository extends AbstractRepository
     {
         parent::__construct($registry, PriceHistory::class);
     }
-
-    public function findByStationAndTypeAndYear(Station $station, Type $type, int $year): array
-    {
-        return $this->createQueryBuilder('ph')
-            ->where('ph.station = :station')
-            // ->andWhere('ph.type = :type')
-            ->andWhere('ph.date >= :startDate')
-            ->andWhere('ph.date < :endDate')
-            ->setParameter('station', $station)
-            // ->setParameter('type', $type)
-            ->setParameter('startDate', "$year-01-01")
-            ->setParameter('endDate', ($year + 1) . "-01-01")
-            ->getQuery()
-            ->getResult();
-    }
 }
