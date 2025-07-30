@@ -48,7 +48,7 @@ class GooglePlace
     #[Groups(['station:read:full'])]
     private ?string $googleMapsDirectionsUri = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true  )]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['station:read:full'])]
     private ?string $googleMapsPlaceUri = null;
 

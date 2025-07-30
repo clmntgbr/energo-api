@@ -43,7 +43,7 @@ class UpdateGasEnergyCommand extends Command
 
         $stations = $this->xmlToDtoTransformer->transformXmlFile(self::XML_NAME);
 
-        array_map(function (OpenDataStation $station) use (&$max) {
+        array_map(function (OpenDataStation $station) {
             $this->bus->dispatch(
                 messages: [
                     new MessageBus(
@@ -51,7 +51,7 @@ class UpdateGasEnergyCommand extends Command
                         stamp: new AmqpStamp('async-high'),
                     ),
                 ],
-            );  
+            );
         }, $stations);
 
         $this->openDataService->remove(self::XML_NAME);

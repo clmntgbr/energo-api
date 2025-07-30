@@ -37,6 +37,10 @@ security:
         - { path: ^/api/token, roles: PUBLIC_ACCESS, methods: POST }
         - { path: ^/api/status, roles: PUBLIC_ACCESS, methods: GET }
         - { path: ^/api/geolocation/stations, roles: PUBLIC_ACCESS, methods: GET }
+        - { path: ^/api/types, roles: PUBLIC_ACCESS, methods: GET }
+        - { path: ^/api/services, roles: PUBLIC_ACCESS, methods: GET }
+        - { path: ^/api/prices/current, roles: PUBLIC_ACCESS, methods: GET }
+        - { path: ^/api/prices/history, roles: PUBLIC_ACCESS, methods: GET }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/api, roles: ROLE_USER }
 

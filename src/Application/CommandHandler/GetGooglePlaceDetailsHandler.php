@@ -63,7 +63,7 @@ class GetGooglePlaceDetailsHandler
                         id: $station->getId(),
                     ),
                     stamp: new AmqpStamp('async-low'),
-                )
+                ),
             ],
         );
     }

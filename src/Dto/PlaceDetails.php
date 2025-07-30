@@ -8,7 +8,7 @@ class PlaceDetails implements \JsonSerializable
 {
     public ?float $rating = null;
     public ?float $userRatingCount = null;
-    
+
     public function __construct(
         #[SerializedPath('[id]')]
         public ?string $id = null,

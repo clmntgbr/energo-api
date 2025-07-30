@@ -34,7 +34,7 @@ class CreateOrUpdateGasStationHandler
         $station->clearServices();
 
         array_map(
-            fn($price) => $this->bus->dispatch(
+            fn ($price) => $this->bus->dispatch(
                 messages: [
                     new MessageBus(
                         command: new CreateOrUpdateGasPrice(
@@ -49,7 +49,7 @@ class CreateOrUpdateGasStationHandler
         );
 
         array_map(
-            fn($service) => $this->bus->dispatch(
+            fn ($service) => $this->bus->dispatch(
                 messages: [
                     new MessageBus(
                         command: new CreateOrUpdateService(

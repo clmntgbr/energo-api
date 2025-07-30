@@ -387,7 +387,7 @@ class Station
         $this->services->clear();
 
         array_map(
-            fn($service) => $this->addService(Service::createService($service)),
+            fn ($service) => $this->addService(Service::createService($service)),
             $services
         );
 

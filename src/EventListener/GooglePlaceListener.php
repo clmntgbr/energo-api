@@ -2,7 +2,6 @@
 
 namespace App\EventListener;
 
-use App\Application\Command\GetGooglePlaceSearchNearby;
 use App\Entity\GooglePlace;
 use App\Repository\GooglePlaceRepository;
 use App\Repository\StationRepository;
@@ -29,7 +28,7 @@ final class GooglePlaceListener
         /** @var GooglePlace[] $googlePlaces */
         $googlePlaces = $this->googlePlaceRepository->findBy(['placeId' => $entity->getPlaceId()]);
 
-        if (count($googlePlaces) === 1) {
+        if (1 === count($googlePlaces)) {
             return;
         }
 

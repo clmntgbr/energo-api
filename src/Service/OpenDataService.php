@@ -2,12 +2,9 @@
 
 namespace App\Service;
 
-use App\Command\UpdateEnergyCommand;
-
 class OpenDataService
 {
     public const URL_INSTANTANEOUS = 'https://donnees.roulez-eco.fr/opendata/instantane';
-    public const URL_HISTORICAL = 'https://donnees.roulez-eco.fr/opendata/annee/';
     public const DIRECTORY = __DIR__.'/../../public/data';
 
     public function __construct()

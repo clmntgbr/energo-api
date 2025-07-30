@@ -112,6 +112,3 @@ ngrok:
 
 update-gas-energy:
 	$(PHP) php bin/console app:update:gas-energy
-
-update-gas-energy-historical:
-	$(PHP) php -d memory_limit=-1 bin/console app:update:gas-energy-historical

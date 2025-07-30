@@ -9,7 +9,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class StationCrudController extends AbstractCrudController
@@ -18,7 +17,7 @@ class StationCrudController extends AbstractCrudController
     {
         return Station::class;
     }
-    
+
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -27,13 +26,13 @@ class StationCrudController extends AbstractCrudController
                 ->setIcon('fa fa-info-circle')
                 ->setColumns(6),
             ...$this->getBasicFields(),
-            
+
             FormField::addColumn(6),
             FormField::addPanel('Address')
                 ->setIcon('fa fa-map-marker-alt')
                 ->setColumns(6),
             ...$this->getAddressFields(),
-            
+
             FormField::addColumn(6),
             FormField::addPanel('Google Place Information')
                 ->setIcon('fa fa-map-marker-alt')

@@ -15,6 +15,7 @@ class XmlToDtoTransformer
 {
     /**
      * Transform an XML file into an array of Station DTOs.
+     *
      * @return OpenDataStation[]
      */
     public function transformXmlFile(string $xmlFilePath): array
