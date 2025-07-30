@@ -26,15 +26,15 @@ final class StationListener
             return;
         }
 
-        $this->bus->dispatch(
-            messages: [
-                new MessageBus(
-                    command: new GetGooglePlaceSearchNearby(
-                        id: $entity->getId(),
-                    ),
-                    stamp: new AmqpStamp('async-medium'),
-                )
-            ],
-        );
+        // $this->bus->dispatch(
+        //     messages: [
+        //         new MessageBus(
+        //             command: new GetGooglePlaceSearchNearby(
+        //                 id: $entity->getId(),
+        //             ),
+        //             stamp: new AmqpStamp('async-medium'),
+        //         )
+        //     ],
+        // );
     }
 }

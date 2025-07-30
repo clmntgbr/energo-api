@@ -42,6 +42,7 @@ class StationRepository extends AbstractRepository
             ) <= :radius')
             // ->andWhere('s.status = :status')
             ->orderBy('distance', 'ASC')
+            ->setMaxResults(200)
             // ->setParameter('status', StationStatus::VALIDATED->getValue())
             ->setParameter('latitude', $geolocationStationsParameters->latitude)
             ->setParameter('longitude', $geolocationStationsParameters->longitude)

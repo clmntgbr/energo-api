@@ -78,7 +78,7 @@ class Station
 
     #[ORM\OneToMany(targetEntity: CurrentPrice::class, mappedBy: 'station')]
     #[ORM\OrderBy(['date' => 'DESC'])]
-    #[Groups(['station:read:full', 'station:read'])]
+    #[Groups(['station:read:full', 'station:read', 'price:read'])]
     private Collection $currentPrices;
 
     #[ORM\OneToMany(targetEntity: PriceHistory::class, mappedBy: 'station')]

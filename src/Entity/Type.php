@@ -27,11 +27,11 @@ class Type
     use TimestampableEntity;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read:full', 'station:read', 'type:read'])]
+    #[Groups(['station:read:full', 'station:read', 'type:read', 'price:read'])]
     private string $name;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Groups(['station:read:full', 'station:read', 'type:read'])]
+    #[Groups(['station:read:full', 'station:read', 'type:read', 'price:read'])]
     private string $typeId;
 
     public function __construct()
@@ -39,19 +39,19 @@ class Type
         $this->id = Uuid::v4();
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'price:read'])]
     public function getId(): Uuid
     {
         return $this->id;
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'price:read'])]
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    #[Groups(['station:read:full'])]
+    #[Groups(['station:read:full', 'price:read'])]
     public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;

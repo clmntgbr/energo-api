@@ -110,5 +110,8 @@ consume:
 ngrok: 
 	ngrok http --url=choice-pretty-leech.ngrok-free.app --host-header=localhost https://localhost:443
 
-update-energy:
-	$(PHP) php bin/console app:update:energy
+update-gas-energy:
+	$(PHP) php bin/console app:update:gas-energy
+
+update-gas-energy-historical:
+	$(PHP) php -d memory_limit=-1 bin/console app:update:gas-energy-historical
