@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Dto\Context;
 use App\Entity\Station;
-use App\Entity\Type;
 use App\Repository\PriceHistoryRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,11 +24,8 @@ class PriceController extends AbstractController
     }
 
     #[Route('/prices/current/{stationId}', name: 'stations_prices_current', methods: ['GET'])]
-    public function pricesCurrent(
-        #[MapEntity(mapping: ['stationId' => 'id'])]
-        Station $station,
-        Context $context,
-    ): JsonResponse {
+    public function pricesCurrent(#[MapEntity(mapping: ['stationId' => 'id'])] Station $station, Context $context): JsonResponse
+    {
         return new JsonResponse(
             data: $this->serializer->serialize($station->getCurrentPrices(), 'json', $context->getGroups()),
             status: Response::HTTP_OK,
