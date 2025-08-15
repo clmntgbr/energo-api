@@ -15,7 +15,7 @@ class StationRepository extends AbstractRepository
     }
 
     /**
-     * @return array<int, array{station: Station, distance: string}>
+     * @return array<int, array{station: Station, distance: string, hasLowPrice: bool, lowPriceIds: string}>
      */
     public function findStationsWithinRadius(GeolocationStationsParameters $geolocationStationsParameters): array
     {
@@ -30,6 +30,8 @@ class StationRepository extends AbstractRepository
                     * sin(radians(a.latitude))
                 )
             ) AS distance')
+            ->addSelect("'' as lowPriceUuids")
+            ->addSelect("0 as hasLowPrice")
             ->innerJoin('s.address', 'a')
             ->where('(
                 6371000 * acos(

@@ -11,4 +11,17 @@ class TypeRepository extends AbstractRepository
     {
         parent::__construct($registry, Type::class);
     }
+
+    public function getTypeIds(): array
+    {
+        /** @var Type[] $entities */
+        $entities = $this->createQueryBuilder('ft')
+            ->select('ft')
+            ->getQuery()
+            ->getResult();
+
+        return array_map(function ($entity) {
+            return (string) $entity->getId();
+        }, $entities);
+    }
 }

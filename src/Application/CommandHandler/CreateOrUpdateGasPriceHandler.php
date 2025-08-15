@@ -32,7 +32,7 @@ class CreateOrUpdateGasPriceHandler
             return;
         }
 
-        $price = $station->getPriceByTypeId($message->openDataPrice->id);
+        $price = $station->getCurrentPriceByTypeId($message->openDataPrice->id);
 
         if (null === $price) {
             $this->dispatchPriceMessages($message);

@@ -180,9 +180,19 @@ class Station
         return $station;
     }
 
-    public function getPriceByTypeId(string $typeId): ?CurrentPrice
+    public function getCurrentPriceByTypeId(string $typeId): ?CurrentPrice
     {
         $currentPrice = $this->currentPrices->filter(fn (CurrentPrice $currentPrice) => $currentPrice->getType()->getTypeId() === $typeId)->first();
+        if (false === $currentPrice) {
+            return null;
+        }
+
+        return $currentPrice;
+    }
+
+    public function getCurrentPriceByTypeUuid(string $typeUuid): ?CurrentPrice
+    {
+        $currentPrice = $this->currentPrices->filter(fn (CurrentPrice $currentPrice) => (string) $currentPrice->getType()->getId() === $typeUuid)->first();
         if (false === $currentPrice) {
             return null;
         }

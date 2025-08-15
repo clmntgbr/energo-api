@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\Context;
 use App\Dto\GeolocationStationsParameters;
 use App\Repository\StationRepository;
+use App\Service\GeolocationStationsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class StationController extends AbstractController
 {
     public function __construct(
-        private readonly StationRepository $stationRepository,
+        private readonly GeolocationStationsService $geolocationStationsService,
         private readonly SerializerInterface $serializer,
         private readonly DenormalizerInterface $denormalizer,
     ) {
@@ -28,7 +29,7 @@ class StationController extends AbstractController
         #[MapQueryString()] GeolocationStationsParameters $geolocationStationsParameters,
         Context $context,
     ): JsonResponse {
-        $stations = $this->stationRepository->findStationsWithinRadius($geolocationStationsParameters);
+        $stations = $this->geolocationStationsService->get($geolocationStationsParameters);
 
         return new JsonResponse(
             data: $this->serializer->serialize($stations, 'json', $context->getGroups()),
